@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Location {
+  id                String @id @default(cuid()) @map("_id")
+  physicalAddressId String @unique
+
+  physicalAddress PhysicalAddress @relation(fields: [physicalAddressId], references: [id])
+  session         Session[]
+  chargestations  Chargestation[]
+}
+
+model Chargestation {
+  id                String @id @default(cuid()) @map("_id")
+  name              String
+  physicalAddressId String
+  locationId        String
+
+  physicalAddress PhysicalAddress @relation(fields: [physicalAddressId], references: [id])
+  location        Location        @relation(fields: [locationId], references: [id])
+  session         Session[]
+}
+
+model PhysicalAddress {
+  id           String @id @default(cuid()) @map("_id")
+  streetName   String
+  streetNumber String
+  city         String
+  state        String
+  postalCode   String
+  countryCode  String
+
+  location       Location?
+  chargestations Chargestation[]
+}
+
+model Session {
+  id              String   @id @default(cuid()) @map("_id")
+  startTime       DateTime
+  endTime         DateTime
+  reason          String
+  energyConsumed  Float
+  totalCost       Float
+  locationId      String
+  chargestationId String
+
+  chargestation Chargestation @relation(fields: [chargestationId], references: [id])
+  location      Location      @relation(fields: [locationId], references: [id])
+}
